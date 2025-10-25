@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 import assert from 'node:assert';
+import C4Hash from '../lib/C4Hash.js';
 
-const inputs = [
+const INPUTS = [
   'alfa',
   'bravo',
   'charlie',
@@ -13,7 +14,7 @@ const inputs = [
   'india',
 ];
 
-const expected = [
+const EXPECTED = [
   'c43zYcLni5LF9rR4Lg4B8h3Jp8SBwjcnyyeh4bc6gTPHndKuKdjUWx1kJPYhZxYt3zV6tQXpDs2shPsPYjgG81wZM1',
   'c42jd8KUQG9DKppN1qt5aWS3PAmdPmNutXyVTb8H123FcuU3shPxpUXsVdcouSALZ4PaDvMYzQSMYCWkb6rop9zhDa',
   'c44erLietE8C1iKmQ3y4ENqA9g82Exdkoxox3KEHops2ux5MTsuMjfbFRvUPsPdi9Pxc3C2MRvLxWT8eFw5XKbRQGw',
@@ -24,3 +25,24 @@ const expected = [
   'c44nNyaFuVbt5MCfo2PYWHpwMkBpYTbt14C6TuoLCYH5RLvAFLngER3nqHfXC2GuttcoDxGBi3pY1j3pUF2W3rZD8N',
   'c41nJ6CvPN7m7UkUA3oS2yjXYNSZ7WayxEQXWPae6wFkWwW8WChQWTu61bSeuCERu78BDK1LUEny1qHZnye3oU7DtY',
 ];
+
+describe('C4Hash', () => {
+  describe('hash', () => {
+    it('correctly encodes test strings', () => {
+      INPUTS.forEach((str, i) => {
+        const h = C4Hash.id(Buffer.from(str));
+        assert.strictEqual(h, EXPECTED[i], `${i}: ${EXPECTED[i]} !== ${h}`);
+      });
+    });
+
+    it('correctly encodes a digest of digests', () => {
+      const expected = 'c435RzTWWsjWD1Fi7dxS3idJ7vFgPVR96oE95RfDDT5ue7hRSPENePDjPDJdnV46g7emDzWK8LzJUjGESMG5qzuXqq';
+
+      const originalHashes = INPUTS.map((val) => C4Hash.id(Buffer.from(val, 'utf8')));
+      const hashOfHashes = C4Hash.generateHashOfHashes(originalHashes);
+
+      assert.strictEqual(hashOfHashes, expected);
+    });
+  });
+});
+
