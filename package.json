@@ -1,0 +1,12 @@
+{
+  "name": "c4id",
+  "version": "0.0.1",
+  "description": "JavaScript implementation of C4 ID hashing.",
+  "license": "ISC",
+  "author": "Brad Cordeiro <brad.cordeiro@gmail.com>",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
