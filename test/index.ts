@@ -1,6 +1,7 @@
 /* eslint-env mocha */
+import { createHash } from 'node:crypto';
 import assert from 'node:assert';
-import C4Hash from '../lib/C4Hash.js';
+import C4ID from '../lib/C4Hash.js';
 
 const INPUTS = [
   'alfa',
@@ -13,6 +14,8 @@ const INPUTS = [
   'hotel',
   'india',
 ];
+
+const INPUT_HASHES = INPUTS.map((i) => createHash('sha512').update(i).digest());
 
 const EXPECTED = [
   'c43zYcLni5LF9rR4Lg4B8h3Jp8SBwjcnyyeh4bc6gTPHndKuKdjUWx1kJPYhZxYt3zV6tQXpDs2shPsPYjgG81wZM1',
@@ -29,20 +32,17 @@ const EXPECTED = [
 describe('C4Hash', () => {
   describe('hash', () => {
     it('correctly encodes test strings', () => {
-      INPUTS.forEach((str, i) => {
-        const h = C4Hash.id(Buffer.from(str));
+      INPUT_HASHES.forEach((hash, i) => {
+        const h = C4ID.fromSHA512Hash(hash);
         assert.strictEqual(h, EXPECTED[i], `${i}: ${EXPECTED[i]} !== ${h}`);
       });
     });
 
     it('correctly encodes a digest of digests', () => {
       const expected = 'c435RzTWWsjWD1Fi7dxS3idJ7vFgPVR96oE95RfDDT5ue7hRSPENePDjPDJdnV46g7emDzWK8LzJUjGESMG5qzuXqq';
-
-      const originalHashes = INPUTS.map((val) => C4Hash.id(Buffer.from(val, 'utf8')));
-      const hashOfHashes = C4Hash.generateHashOfHashes(originalHashes);
+      const hashOfHashes = C4ID.fromIds(EXPECTED);
 
       assert.strictEqual(hashOfHashes, expected);
     });
   });
 });
-

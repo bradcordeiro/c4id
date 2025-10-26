@@ -1,14 +1,41 @@
-import crypto from 'node:crypto';
-import Stream from 'node:stream';
+import { createHash } from 'node:crypto';
 
 const CHARSET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'.split(''); // per SMPTE ST 2114:2017
 const BASE = BigInt(CHARSET.length);
 const ID_LENGTH = 90; // per SMPTE ST 2114:2017
-const BIGZERO = BigInt(0);
-const BIG256 = BigInt(256);
 
+/* Converts a buffer of arbitrary size to a BigInt */
+const bufferToBigInt = (buf: Buffer) : bigint => {
+  let output = 0n;
+
+  for (let i = 0; i < buf.length; i += 1) {
+    output = (output << 8n) + BigInt(buf[i]); /* eslint-disable-line no-bitwise */
+  }
+
+  return output;
+};
+
+/* Creates a C4 ID from a BigInt representation of a SHA512 digest (64 byte integer) */
+const c4IdFromBigInt = (n: bigint): string => {
+  let hash = n;
+  const id: string[] = Array(ID_LENGTH).fill('1');
+  id[0] = 'c';
+  id[1] = '4';
+
+  let i = ID_LENGTH - 1;
+  while (hash !== 0n) {
+    const modulo = Number(hash % BASE);
+    hash /= BASE;
+    id[i] = CHARSET[modulo];
+    i -= 1;
+  }
+
+  return id.join('');
+};
+
+/* Function to sort a pair of buffers using Array.sort() */
 const sortDigests = (a: Buffer, b: Buffer) : number => {
-  const min = Math.min(a.length, b.length);
+  const min = a.length > b.length ? b.length : a.length;
 
   for (let i = min - 1; i >= 0; i -= 1) {
     if (a[i] > b[i]) return 1;
@@ -18,61 +45,32 @@ const sortDigests = (a: Buffer, b: Buffer) : number => {
   return 0;
 };
 
-export default class C4Hash {
-  protected sha512Hash: crypto.Hash;
+const C4ID = {
+  fromSHA512Hash(sha512Hash: Buffer): string {
+    const hash = bufferToBigInt(sha512Hash);
+    return c4IdFromBigInt(hash);
+  },
 
-  constructor() {
-    this.sha512Hash = crypto.createHash('sha512');
-  }
-
-  protected static digestToId(sha512Hash: Buffer) {
-    const digest = sha512Hash.toString('hex');
-
-    let hash = BigInt(`0x${digest}`);
-    const id: string[] = Array(ID_LENGTH).fill('1');
-    id[0] = 'c';
-    id[1] = '4';
-
-    let i = ID_LENGTH - 1;
-    while (hash !== BIGZERO) {
-      const modulo = Number(hash % BASE);
-      hash /= BASE;
-      id[i] = CHARSET[modulo];
-      i -= 1;
-    }
-
-    return id.join('');
-  }
-
-  protected static idToDigest(c4id: string) : Buffer {
-    const id = c4id.substring(2);
+  toSHA512Hash(c4Id: string): Buffer {
+    const id = c4Id.substring(2);
 
     let result = id
       .split('')
-      .reduce((acc, curr) => acc * BASE + BigInt(CHARSET.indexOf(curr)), BIGZERO);
+      .reduce((acc, curr) => acc * BASE + BigInt(CHARSET.indexOf(curr)), 0n);
 
     const c4digest = Buffer.alloc(64);
 
     for (let i = 63; i >= 0; i -= 1) {
-      c4digest[i] = Number(result % BIG256);
-      result /= BIG256;
+      c4digest[i] = Number(result % 256n);
+      result /= 256n;
     }
 
     return c4digest;
-  }
+  },
 
-  static hash(data: Buffer) : Buffer {
-    return new C4Hash().update(data).digest();
-  }
-
-  static id(data: Buffer) : string {
-    return C4Hash.digestToId(C4Hash.hash(data));
-  }
-
-  static generateHashOfHashes(c4ids: (string | Buffer)[]) : string {
-    const input = c4ids.map((id) => (typeof id === 'string' ? id : C4Hash.digestToId(id)));
-
-    let digests = Array.from(new Set(input)).sort();
+  fromIds(c4ids: string[]) : string {
+    const unique = Array.from(new Set(c4ids)).sort();
+    let digests = Array.from(unique).sort();
 
     while (digests.length > 1) {
       let holdingElement: string | undefined;
@@ -84,11 +82,11 @@ export default class C4Hash {
       const output: string[] = [];
 
       for (let i = 0; i < digests.length; i += 2) {
-        const pair = digests.slice(i, i + 2).map((d) => C4Hash.idToDigest(d));
+        const pair = digests.slice(i, i + 2).map((d) => this.toSHA512Hash(d));
         pair.sort(sortDigests);
 
         const concatted = Buffer.concat(pair);
-        const id = C4Hash.id(concatted);
+        const id = this.fromSHA512Hash(createHash('sha512').update(concatted).digest());
 
         output.push(id);
       }
@@ -102,28 +100,7 @@ export default class C4Hash {
     }
 
     return digests[0];
-  }
+  },
+};
 
-  reset() {
-    this.sha512Hash = crypto.createHash('sha512');
-  }
-
-  copy(options?: crypto.HashOptions) : C4Hash {
-    const n = new C4Hash();
-    n.sha512Hash = this.sha512Hash.copy(options);
-    return n;
-  }
-
-  update(chunk: crypto.BinaryLike) : C4Hash {
-    this.sha512Hash.update(chunk);
-    return this;
-  }
-
-  digest() : Buffer {
-    return this.sha512Hash.digest();
-  }
-
-  id() : string {
-    return C4Hash.digestToId(this.digest());
-  }
-}
+export default C4ID;

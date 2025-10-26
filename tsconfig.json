@@ -5,6 +5,7 @@
     "test/**/*.ts"
   ],
   "compilerOptions": {
+    "lib": [],
     "outDir": "./dist",
   }
 }

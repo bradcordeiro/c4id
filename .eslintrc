@@ -1,0 +1,22 @@
+{
+  "root": true,
+  "ignorePatterns": ["node_modules/**/*", "build/**/*.js"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": [
+      "./tsconfig.json"
+    ]
+  },
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "airbnb",
+    "airbnb-typescript"
+  ],
+  "rules": {
+    "max-len": ["warn", { "code": 140, "ignoreComments": true }],
+    "no-underscore-dangle": [ "error", { "allow": ["_transform"] }],
+    "no-console": ["off"],
+    "react/require-default-props": ["off"]
+  }
+}
