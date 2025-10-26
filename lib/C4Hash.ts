@@ -4,6 +4,26 @@ const CHARSET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'.spl
 const BIGINT_BASE = BigInt(CHARSET.length);
 const ID_LENGTH = 90; // per SMPTE ST 2114:2017
 
+const getIndexOfCharInCharset = (char: string): bigint => {
+  const i = char.charCodeAt(0);
+  let difference = 0;
+
+  // '1' to '9'
+  if (i >= 49 && i <= 57) difference = 49;
+  // 'A' to 'H'
+  else if (i >= 65 && i <= 72) difference = 56;
+  // 'J' to 'N'
+  else if (i >= 74 && i <= 78) difference = 57;
+  // 'P' to 'Z'
+  else if (i >= 80 && i <= 90) difference = 58;
+  // 'a' to 'k'
+  else if (i >= 97 && i <= 107) difference = 64;
+  // 'm' to 'z'
+  else if (i >= 109 && i <= 122) difference = 65;
+
+  return BigInt(i - difference);
+};
+
 /* Converts a buffer of arbitrary size to a BigInt */
 const bufferToBigInt = (buf: Buffer) : bigint => {
   let output = 0n;
@@ -51,22 +71,21 @@ const C4ID = {
     return c4IdFromBigInt(hash);
   },
 
-  toSHA512Hash(c4Id: string): Buffer {
+  toSHA512Digest(c4Id: string): Buffer {
     const id = c4Id.substring(2).split('');
-    let result = id.reduce((acc, curr) => acc * BIGINT_BASE + BigInt(CHARSET.indexOf(curr)), 0n);
-    const c4digest = Buffer.alloc(64);
+    let result = id.reduce((acc, curr) => acc * BIGINT_BASE + getIndexOfCharInCharset(curr), 0n);
+    const sha512Digest = Buffer.alloc(64);
 
     for (let i = 63; i >= 0; i -= 1) {
-      c4digest[i] = Number(result % 256n);
+      sha512Digest[i] = Number(result % 256n);
       result /= 256n;
     }
 
-    return c4digest;
+    return sha512Digest;
   },
 
   fromIds(c4ids: string[]) : string {
-    const unique = Array.from(new Set(c4ids)).sort();
-    let digests = Array.from(unique).sort();
+    let digests = Array.from(new Set(c4ids)).sort();
 
     while (digests.length > 1) {
       let holdingElement: string | undefined;
@@ -78,7 +97,7 @@ const C4ID = {
       const output: string[] = [];
 
       for (let i = 0; i < digests.length; i += 2) {
-        const pair = digests.slice(i, i + 2).map((d) => this.toSHA512Hash(d));
+        const pair = digests.slice(i, i + 2).map((d) => this.toSHA512Digest(d));
         pair.sort(sortDigests);
 
         const concatted = Buffer.concat(pair);

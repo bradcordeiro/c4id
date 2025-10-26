@@ -40,7 +40,7 @@ describe('C4Hash', () => {
 
     it('correctly converts an ID to a SHA512 Hash', () => {
       const inputHashes = INPUTS.map((str) => createHash('sha512').update(str).digest());
-      const outputSHA512s = EXPECTED.map((id) => C4ID.toSHA512Hash(id));
+      const outputSHA512s = EXPECTED.map((id) => C4ID.toSHA512Digest(id));
 
       for (let i = 0; i < inputHashes.length; i += 1) {
         assert.strictEqual(Buffer.compare(outputSHA512s[i], inputHashes[i]), 0, `${i}: ${outputSHA512s[i]} !== ${inputHashes[i]}`);

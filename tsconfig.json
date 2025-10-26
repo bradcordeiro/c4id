@@ -1,6 +1,7 @@
 {
   "extends": "@tsconfig/node22/tsconfig.json",
   "include": [
+    "index.ts",
     "lib/**/*.ts",
     "test/**/*.ts"
   ],
