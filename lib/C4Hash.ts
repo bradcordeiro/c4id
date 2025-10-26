@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 
 const CHARSET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'.split(''); // per SMPTE ST 2114:2017
-const BASE = BigInt(CHARSET.length);
+const BIGINT_BASE = BigInt(CHARSET.length);
 const ID_LENGTH = 90; // per SMPTE ST 2114:2017
 
 /* Converts a buffer of arbitrary size to a BigInt */
@@ -24,8 +24,8 @@ const c4IdFromBigInt = (n: bigint): string => {
 
   let i = ID_LENGTH - 1;
   while (hash !== 0n) {
-    const modulo = Number(hash % BASE);
-    hash /= BASE;
+    const modulo = Number(hash % BIGINT_BASE);
+    hash /= BIGINT_BASE;
     id[i] = CHARSET[modulo];
     i -= 1;
   }
@@ -52,12 +52,8 @@ const C4ID = {
   },
 
   toSHA512Hash(c4Id: string): Buffer {
-    const id = c4Id.substring(2);
-
-    let result = id
-      .split('')
-      .reduce((acc, curr) => acc * BASE + BigInt(CHARSET.indexOf(curr)), 0n);
-
+    const id = c4Id.substring(2).split('');
+    let result = id.reduce((acc, curr) => acc * BIGINT_BASE + BigInt(CHARSET.indexOf(curr)), 0n);
     const c4digest = Buffer.alloc(64);
 
     for (let i = 63; i >= 0; i -= 1) {

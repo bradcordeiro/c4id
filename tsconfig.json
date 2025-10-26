@@ -7,5 +7,6 @@
   "compilerOptions": {
     "lib": [],
     "outDir": "./dist",
+    "declaration": true,
   }
 }

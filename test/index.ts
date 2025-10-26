@@ -15,8 +15,6 @@ const INPUTS = [
   'india',
 ];
 
-const INPUT_HASHES = INPUTS.map((i) => createHash('sha512').update(i).digest());
-
 const EXPECTED = [
   'c43zYcLni5LF9rR4Lg4B8h3Jp8SBwjcnyyeh4bc6gTPHndKuKdjUWx1kJPYhZxYt3zV6tQXpDs2shPsPYjgG81wZM1',
   'c42jd8KUQG9DKppN1qt5aWS3PAmdPmNutXyVTb8H123FcuU3shPxpUXsVdcouSALZ4PaDvMYzQSMYCWkb6rop9zhDa',
@@ -32,10 +30,21 @@ const EXPECTED = [
 describe('C4Hash', () => {
   describe('hash', () => {
     it('correctly encodes test strings', () => {
-      INPUT_HASHES.forEach((hash, i) => {
+      const inputHashes = INPUTS.map((i) => createHash('sha512').update(i).digest());
+
+      inputHashes.forEach((hash, i) => {
         const h = C4ID.fromSHA512Hash(hash);
         assert.strictEqual(h, EXPECTED[i], `${i}: ${EXPECTED[i]} !== ${h}`);
       });
+    });
+
+    it('correctly converts an ID to a SHA512 Hash', () => {
+      const inputHashes = INPUTS.map((str) => createHash('sha512').update(str).digest());
+      const outputSHA512s = EXPECTED.map((id) => C4ID.toSHA512Hash(id));
+
+      for (let i = 0; i < inputHashes.length; i += 1) {
+        assert.strictEqual(Buffer.compare(outputSHA512s[i], inputHashes[i]), 0, `${i}: ${outputSHA512s[i]} !== ${inputHashes[i]}`);
+      }
     });
 
     it('correctly encodes a digest of digests', () => {
