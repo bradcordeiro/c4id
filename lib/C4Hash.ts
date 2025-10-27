@@ -55,9 +55,7 @@ const c4IdFromBigInt = (n: bigint): string => {
 
 /* Function to sort a pair of buffers using Array.sort() */
 const sortDigests = (a: Buffer, b: Buffer) : number => {
-  const min = a.length > b.length ? b.length : a.length;
-
-  for (let i = min - 1; i >= 0; i -= 1) {
+  for (let i = 63; i >= 0; i -= 1) {
     if (a[i] > b[i]) return 1;
     if (b[i] < a[i]) return -1;
   }
@@ -65,12 +63,21 @@ const sortDigests = (a: Buffer, b: Buffer) : number => {
   return 0;
 };
 
+const hashPair = (a: Buffer, b: Buffer) : Buffer => {
+  const pair = [a, b].sort(sortDigests);
+
+  const concatted = Buffer.concat(pair);
+  return createHash('sha512').update(concatted).digest();
+};
+
 const C4ID = {
+  /* Create a C4 ID from a SHA512 digest buffer */
   fromSHA512Hash(sha512Hash: Buffer): string {
     const hash = bufferToBigInt(sha512Hash);
     return c4IdFromBigInt(hash);
   },
 
+  /* Revert a C4 ID to a SHA512 hash digest buffer */
   toSHA512Digest(c4Id: string): Buffer {
     const id = c4Id.substring(2).split('');
     let result = id.reduce((acc, curr) => acc * BIGINT_BASE + getIndexOfCharInCharset(curr), 0n);
@@ -84,6 +91,7 @@ const C4ID = {
     return sha512Digest;
   },
 
+  /* Create a "hash of hashes" from multiple C4 IDs, as described in SMPTE ST 2114:2017 */
   fromIds(c4ids: string[]) : string {
     let digests = Array.from(new Set(c4ids)).sort();
 
@@ -94,23 +102,17 @@ const C4ID = {
         holdingElement = digests.pop();
       }
 
-      const output: string[] = [];
+      const hashes = digests.map((d) => this.toSHA512Digest(d));
+      digests = [];
 
-      for (let i = 0; i < digests.length; i += 2) {
-        const pair = digests.slice(i, i + 2).map((d) => this.toSHA512Digest(d));
-        pair.sort(sortDigests);
-
-        const concatted = Buffer.concat(pair);
-        const id = this.fromSHA512Hash(createHash('sha512').update(concatted).digest());
-
-        output.push(id);
+      for (let i = 0; i < hashes.length; i += 2) {
+        const concatted = hashPair(hashes[i], hashes[i + 1]);
+        const id = this.fromSHA512Hash(concatted);
+        digests.push(id);
       }
-
-      digests = output.slice(0);
 
       if (holdingElement) {
         digests.push(holdingElement);
-        holdingElement = undefined;
       }
     }
 

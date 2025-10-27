@@ -29,7 +29,7 @@ const EXPECTED = [
 
 describe('C4Hash', () => {
   describe('hash', () => {
-    it('correctly encodes test strings', () => {
+    it('correctly encodes test strings to C4 IDs', () => {
       const inputHashes = INPUTS.map((i) => createHash('sha512').update(i).digest());
 
       inputHashes.forEach((hash, i) => {
@@ -38,7 +38,7 @@ describe('C4Hash', () => {
       });
     });
 
-    it('correctly converts an ID to a SHA512 Hash', () => {
+    it('correctly converts a C4 ID to a SHA512 hash digest', () => {
       const inputHashes = INPUTS.map((str) => createHash('sha512').update(str).digest());
       const outputSHA512s = EXPECTED.map((id) => C4ID.toSHA512Digest(id));
 
@@ -47,7 +47,7 @@ describe('C4Hash', () => {
       }
     });
 
-    it('correctly encodes a digest of digests', () => {
+    it('correctly encodes a C4 ID of C4 IDs', () => {
       const expected = 'c435RzTWWsjWD1Fi7dxS3idJ7vFgPVR96oE95RfDDT5ue7hRSPENePDjPDJdnV46g7emDzWK8LzJUjGESMG5qzuXqq';
       const hashOfHashes = C4ID.fromIds(EXPECTED);
 

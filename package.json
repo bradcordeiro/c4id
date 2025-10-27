@@ -1,14 +1,15 @@
 {
   "name": "c4id",
   "version": "0.0.1",
-  "description": "JavaScript implementation of C4 ID hashing.",
+  "description": "JavaScript module to generate C4 IDs.",
+  "repository": "https://github.com/bradcordeiro/c4id",
   "license": "ISC",
   "author": "Brad Cordeiro <brad.cordeiro@gmail.com>",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha dist/test/index.js",
-    "build": "NODE_ENV=development tsc"
+    "build": "tsc"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.1",
