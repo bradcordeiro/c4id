@@ -24,8 +24,8 @@ const getIndexOfCharInCharset = (char: string): bigint => {
   return BigInt(i - difference);
 };
 
-/* Converts a buffer of arbitrary size to a BigInt */
-const bufferToBigInt = (buf: Buffer) : bigint => {
+/* Converts a UInt8Array of arbitrary size to a BigInt */
+const uInt8ArrayToBigInt = (buf: Uint8Array) : bigint => {
   let output = 0n;
 
   for (let i = 0; i < buf.length; i += 1) {
@@ -53,8 +53,8 @@ const c4IdFromBigInt = (n: bigint): string => {
   return id.join('');
 };
 
-/* Function to sort a pair of buffers using Array.sort() */
-const sortDigests = (a: Buffer, b: Buffer) : number => {
+/* Function to sort a pair of UInt8Arrays using Array.sort() */
+const sortDigests = (a: Uint8Array, b: Uint8Array) : number => {
   for (let i = 63; i >= 0; i -= 1) {
     if (a[i] > b[i]) return 1;
     if (b[i] < a[i]) return -1;
@@ -63,25 +63,25 @@ const sortDigests = (a: Buffer, b: Buffer) : number => {
   return 0;
 };
 
-const hashPair = (a: Buffer, b: Buffer) : Buffer => {
+const hashPair = (a: Uint8Array, b: Uint8Array) : Uint8Array => {
   const pair = [a, b].sort(sortDigests);
 
-  const concatted = Buffer.concat(pair);
+  const concatted = Uint8Array.of(...pair[0], ...pair[1]);
   return createHash('sha512').update(concatted).digest();
 };
 
 const C4ID = {
-  /* Create a C4 ID from a SHA512 digest buffer */
-  fromSHA512Hash(sha512Hash: Buffer): string {
-    const hash = bufferToBigInt(sha512Hash);
+  /* Create a C4 ID from a SHA512 digest UInt8Array */
+  fromSHA512Hash(sha512Hash: Uint8Array): string {
+    const hash = uInt8ArrayToBigInt(sha512Hash);
     return c4IdFromBigInt(hash);
   },
 
-  /* Revert a C4 ID to a SHA512 hash digest buffer */
-  toSHA512Digest(c4Id: string): Buffer {
+  /* Revert a C4 ID to a SHA512 hash digest UInt8Array */
+  toSHA512Digest(c4Id: string): Uint8Array {
     const id = c4Id.substring(2).split('');
     let result = id.reduce((acc, curr) => acc * BIGINT_BASE + getIndexOfCharInCharset(curr), 0n);
-    const sha512Digest = Buffer.alloc(64);
+    const sha512Digest = new Uint8Array(64);
 
     for (let i = 63; i >= 0; i -= 1) {
       sha512Digest[i] = Number(result % 256n);
