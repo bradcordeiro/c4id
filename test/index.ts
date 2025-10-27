@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 import { createHash } from 'node:crypto';
 import assert from 'node:assert';
-import C4ID from '../lib/C4Hash.js';
+import C4ID from '../index.js';
 
 const INPUTS = [
   'alfa',
