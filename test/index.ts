@@ -43,7 +43,11 @@ describe('C4Hash', () => {
       const outputSHA512s = EXPECTED.map((id) => C4ID.toSHA512Digest(id));
 
       for (let i = 0; i < inputHashes.length; i += 1) {
-        assert.strictEqual(Buffer.compare(outputSHA512s[i], inputHashes[i]), 0, `${i}: ${outputSHA512s[i]} !== ${inputHashes[i]}`);
+        assert.strictEqual(
+          Buffer.compare(outputSHA512s[i], inputHashes[i]),
+          0,
+          `${i}: ${outputSHA512s[i]} !== ${inputHashes[i]}`,
+        );
       }
     });
 

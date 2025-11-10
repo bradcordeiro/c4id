@@ -5,27 +5,29 @@ const BIGINT_BASE = BigInt(CHARSET.length);
 const ID_LENGTH = 90; // per SMPTE ST 2114:2017
 
 const getIndexOfCharInCharset = (char: string): bigint => {
-  const i = char.charCodeAt(0);
+  const x = char.charCodeAt(0);
   let difference = 0;
 
-  // '1' to '9'
-  if (i >= 49 && i <= 57) difference = 49;
-  // 'A' to 'H'
-  else if (i >= 65 && i <= 72) difference = 56;
-  // 'J' to 'N'
-  else if (i >= 74 && i <= 78) difference = 57;
-  // 'P' to 'Z'
-  else if (i >= 80 && i <= 90) difference = 58;
-  // 'a' to 'k'
-  else if (i >= 97 && i <= 107) difference = 64;
-  // 'm' to 'z'
-  else if (i >= 109 && i <= 122) difference = 65;
+  /* Converts a Unicode value to an index in the CHARSET */
 
-  return BigInt(i - difference);
+  // '1' to '9'
+  if (x >= 49 && x <= 57) difference = 49;
+  // 'A' to 'H'
+  else if (x >= 65 && x <= 72) difference = 56;
+  // 'J' to 'N'
+  else if (x >= 74 && x <= 78) difference = 57;
+  // 'P' to 'Z'
+  else if (x >= 80 && x <= 90) difference = 58;
+  // 'a' to 'k'
+  else if (x >= 97 && x <= 107) difference = 64;
+  // 'm' to 'z'
+  else if (x >= 109 && x <= 122) difference = 65;
+
+  return BigInt(x - difference);
 };
 
 /* Converts a UInt8Array of arbitrary size to a BigInt */
-const uInt8ArrayToBigInt = (buf: Uint8Array) : bigint => {
+const uInt8ArrayToBigInt = (buf: Uint8Array): bigint => {
   let output = 0n;
 
   for (let i = 0; i < buf.length; i += 1) {
@@ -35,26 +37,8 @@ const uInt8ArrayToBigInt = (buf: Uint8Array) : bigint => {
   return output;
 };
 
-/* Creates a C4 ID from a BigInt representation of a SHA512 digest (64 byte integer) */
-const c4IdFromBigInt = (n: bigint): string => {
-  let hash = n;
-  const id: string[] = Array(ID_LENGTH).fill('1');
-  id[0] = 'c';
-  id[1] = '4';
-
-  let i = ID_LENGTH - 1;
-  while (hash !== 0n) {
-    const modulo = Number(hash % BIGINT_BASE);
-    hash /= BIGINT_BASE;
-    id[i] = CHARSET[modulo];
-    i -= 1;
-  }
-
-  return id.join('');
-};
-
-/* Function to sort a pair of UInt8Arrays using Array.sort() */
-const sortDigests = (a: Uint8Array, b: Uint8Array) : number => {
+/* Sort a pair of UInt8Arrays, works with Array.sort() */
+const sortDigests = (a: Uint8Array, b: Uint8Array): number => {
   for (let i = 63; i >= 0; i -= 1) {
     if (a[i] > b[i]) return 1;
     if (b[i] < a[i]) return -1;
@@ -63,7 +47,8 @@ const sortDigests = (a: Uint8Array, b: Uint8Array) : number => {
   return 0;
 };
 
-const hashPair = (a: Uint8Array, b: Uint8Array) : Uint8Array => {
+/* Sort and hash a pair of UInt8Arrays */
+const hashPair = (a: Uint8Array, b: Uint8Array): Uint8Array => {
   const pair = [a, b].sort(sortDigests);
 
   const concatted = Uint8Array.of(...pair[0], ...pair[1]);
@@ -73,8 +58,21 @@ const hashPair = (a: Uint8Array, b: Uint8Array) : Uint8Array => {
 const C4ID = {
   /* Create a C4 ID from a SHA512 digest UInt8Array */
   fromSHA512Hash(sha512Hash: Uint8Array): string {
-    const hash = uInt8ArrayToBigInt(sha512Hash);
-    return c4IdFromBigInt(hash);
+    let hash = uInt8ArrayToBigInt(sha512Hash);
+
+    const id: string[] = Array(ID_LENGTH).fill('1');
+    id[0] = 'c';
+    id[1] = '4';
+
+    let i = ID_LENGTH - 1;
+    while (hash !== 0n) {
+      const modulo = Number(hash % BIGINT_BASE);
+      hash /= BIGINT_BASE;
+      id[i] = CHARSET[modulo];
+      i -= 1;
+    }
+
+    return id.join('');
   },
 
   /* Revert a C4 ID to a SHA512 hash digest UInt8Array */
