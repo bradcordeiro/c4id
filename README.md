@@ -1,8 +1,6 @@
 # C4ID
 
-NodeJS module to generate C4 IDs. As described in [SMPTE ST 2114:2017](https://pub.smpte.org/latest/st2114/st2114-2017.pdf), a C4 ID
-is a 64 byte SHA512 hash, represented as a 90 character, Base58 string. This package does not create SHA512 hashes, it simply converts
-them to C4 IDs.
+NodeJS module to generate C4 IDs. As described in [SMPTE ST 2114:2017](https://pub.smpte.org/latest/st2114/st2114-2017.pdf), a C4 ID is a 64 byte SHA512 hash, represented as a 90 character Base58 string. This package does not create SHA512 hashes, it simply converts them to C4 IDs.
 
 ## Installing / Getting started
 
@@ -60,8 +58,8 @@ This package was written using the [Airbnb Style Guide](https://github.com/airbn
 
 Function | Argument Type | Return Type | Description
 ------ | ------------- | ----------- |------------
-fromSHA512Hash(*sha512Hash*) | Buffer | string | Takes a SHA512 hash and returns a C4 ID string.
-toSHA512Digest(*c4id*) | string | Buffer | Takes a C4 ID and returns a SHA512 hash digest.
+fromSHA512Hash(*sha512Hash*) | UInt8Array | string | Takes a SHA512 hash and returns a C4 ID string.
+toSHA512Digest(*c4id*) | string | UInt8Array | Takes a C4 ID and returns a SHA512 hash digest.
 fromIds(*c4ids*) | string[] | string | [SMPTE ST 2114:2017](https://pub.smpte.org/latest/st2114/st2114-2017.pdf) describes a method to generate a C4 ID from other C4 IDs (e.g. to generate a single C4 ID from multiple files in the same folder). This function will take an array of C4 IDs and return a single C4 ID from the input, as specified in [SMPTE ST 2114:2017](https://pub.smpte.org/latest/st2114/st2114-2017.pdf).
 
 ## Licensing
