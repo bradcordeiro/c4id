@@ -1,6 +1,6 @@
 # C4ID
 
-NodeJS module to generate C4 IDs. As described in [SMPTE ST 2114:2017](https://pub.smpte.org/latest/st2114/st2114-2017.pdf), a C4 ID is a 64 byte SHA512 hash, represented as a 90 character Base58 string. This package does not create SHA512 hashes, it simply converts them to C4 IDs.
+A JavaScript module for NodeJS to generate C4 IDs. Written in TypeScript. As described in [SMPTE ST 2114:2017](https://pub.smpte.org/latest/st2114/st2114-2017.pdf), a C4 ID is a 90 character Base58 string representation of a 64 byte SHA512 hash. This package does not create SHA512 hashes, it simply creates their C4 IDs representation.
 
 ## Installing / Getting started
 
@@ -64,4 +64,4 @@ fromIds(*c4ids*) | string[] | string | [SMPTE ST 2114:2017](https://pub.smpte.or
 
 ## Licensing
 
-Released under the [MIT License](https://github.com/bradcordeiro/edl-genius/blob/master/LICENSE).
+Released under the [MIT License](https://github.com/bradcordeiro/c4id/blob/main/LICENSE).
