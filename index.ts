@@ -31,7 +31,7 @@ const uInt8ArrayToBigInt = (buf: Uint8Array): bigint => {
   let output = 0n;
 
   for (let i = 0; i < buf.length; i += 1) {
-    output = (output << 8n) + BigInt(buf[i]); /* eslint-disable-line no-bitwise */
+    output = (output << 8n) + BigInt(buf[i]);
   }
 
   return output;
