@@ -4,7 +4,7 @@ const CHARSET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'.spl
 const BIGINT_BASE = BigInt(CHARSET.length);
 const ID_LENGTH = 90; // per SMPTE ST 2114:2017
 
-const getIndexOfCharInCharset = (char: string): bigint => {
+const getIndexOfCharInCharset = (char: string): number => {
   const x = char.charCodeAt(0);
   let difference = 0;
 
@@ -23,7 +23,7 @@ const getIndexOfCharInCharset = (char: string): bigint => {
   // 'm' to 'z'
   else if (x >= 109 && x <= 122) difference = 65;
 
-  return BigInt(x - difference);
+  return x - difference;
 };
 
 /* Converts a UInt8Array of arbitrary size to a BigInt */
@@ -65,7 +65,7 @@ const C4ID = {
     id[1] = '4';
 
     let i = ID_LENGTH - 1;
-    while (hash !== 0n) {
+    while (hash !== 0n && i >= 0) {
       const modulo = Number(hash % BIGINT_BASE);
       hash /= BIGINT_BASE;
       id[i] = CHARSET[modulo];
@@ -77,8 +77,9 @@ const C4ID = {
 
   /* Revert a C4 ID to a SHA512 hash digest UInt8Array */
   toSHA512Digest(c4Id: string): Uint8Array {
-    const id = c4Id.substring(2).split('');
-    let result = id.reduce((acc, curr) => acc * BIGINT_BASE + getIndexOfCharInCharset(curr), 0n);
+    const id = c4Id.substring(2).split(''); // omit the leading 'c4' from the C4 ID
+
+    let result = id.reduce((acc, curr) => (acc * BIGINT_BASE) + BigInt(getIndexOfCharInCharset(curr)), 0n);
     const sha512Digest = new Uint8Array(64);
 
     for (let i = 63; i >= 0; i -= 1) {
