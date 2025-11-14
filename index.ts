@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-const CHARSET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'.split(''); // per SMPTE ST 2114:2017
+const CHARSET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'; // per SMPTE ST 2114:2017
 const BIGINT_BASE = BigInt(CHARSET.length);
 const ID_LENGTH = 90; // per SMPTE ST 2114:2017
 
@@ -60,7 +60,7 @@ const C4ID = {
   fromSHA512Hash(sha512Hash: Uint8Array): string {
     let hash = uInt8ArrayToBigInt(sha512Hash);
 
-    const id: string[] = Array(ID_LENGTH).fill('1');
+    const id: string[] = Array(ID_LENGTH).fill('1', 2);
     id[0] = 'c';
     id[1] = '4';
 
@@ -77,7 +77,7 @@ const C4ID = {
 
   /* Revert a C4 ID to a SHA512 hash digest UInt8Array */
   toSHA512Digest(c4Id: string): Uint8Array {
-    const id = c4Id.substring(2).split(''); // omit the leading 'c4' from the C4 ID
+    const id = c4Id.split('').slice(2); // omit the leading 'c4' from the C4 ID
 
     let result = id.reduce((acc, curr) => (acc * BIGINT_BASE) + BigInt(getIndexOfCharInCharset(curr)), 0n);
     const sha512Digest = new Uint8Array(64);
