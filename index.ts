@@ -55,27 +55,31 @@ const hashPair = (a: Uint8Array, b: Uint8Array): Uint8Array => {
   return createHash('sha512').update(concatted).digest();
 };
 
-const C4ID = {
-  /* Create a C4 ID from a SHA512 digest UInt8Array */
-  fromSHA512Hash(sha512Hash: Uint8Array): string {
-    let hash = uInt8ArrayToBigInt(sha512Hash);
+export default {
+  /**
+   * Create a C4 ID from a SHA512 digest.
+   */
+  fromSHA512Hash(sha512HashDigest: Uint8Array): string {
+    let digest = uInt8ArrayToBigInt(sha512HashDigest);
 
     const id: string[] = Array(ID_LENGTH).fill('1', 2);
     id[0] = 'c';
     id[1] = '4';
 
     let i = ID_LENGTH - 1;
-    while (hash !== 0n && i >= 0) {
-      const modulo = Number(hash % BIGINT_BASE);
-      hash /= BIGINT_BASE;
+    while (digest !== 0n && i >= 0) {
+      const modulo = Number(digest % BIGINT_BASE);
       id[i] = CHARSET[modulo];
+      digest /= BIGINT_BASE;
       i -= 1;
     }
 
     return id.join('');
   },
 
-  /* Revert a C4 ID to a SHA512 hash digest UInt8Array */
+  /**
+   * Convert a C4 ID to a SHA512 hash digest
+   */
   toSHA512Digest(c4Id: string): Uint8Array {
     const id = c4Id.split('').slice(2); // omit the leading 'c4' from the C4 ID
 
@@ -90,7 +94,9 @@ const C4ID = {
     return sha512Digest;
   },
 
-  /* Create a "hash of hashes" from multiple C4 IDs, as described in SMPTE ST 2114:2017 */
+  /**
+   * Create a "hash of hashes" from multiple C4 IDs, as described in SMPTE ST 2114:2017
+   */
   fromIds(c4ids: string[]) : string {
     let digests = Array.from(new Set(c4ids)).sort();
 
@@ -118,5 +124,3 @@ const C4ID = {
     return digests[0];
   },
 };
-
-export default C4ID;

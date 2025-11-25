@@ -2,16 +2,15 @@
   "include": [
     "index.ts",
     "test/**/*.ts"
-, "index.ts"  ],
+  ],
   "compilerOptions": {
     "module": "node16",
-    "target": "es2020",
+    "lib": ["ES2021"],
+    "target": "ES2021",
     "outDir": "./dist",
     "declaration": true,
     "sourceMap": true,
     "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
     "moduleResolution": "node16"
   }
 }
