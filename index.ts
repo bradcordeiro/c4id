@@ -4,6 +4,14 @@ const CHARSET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'; //
 const BIGINT_BASE = BigInt(CHARSET.length);
 const ID_LENGTH = 90; // per SMPTE ST 2114:2017
 
+const initializeNewC4IDArray = (): string[] => {
+  const id: string[] = Array(ID_LENGTH).fill('1', 2);
+  id[0] = 'c';
+  id[1] = '4';
+
+  return id;
+};
+
 const getIndexOfCharInCharset = (char: string): number => {
   const x = char.charCodeAt(0);
   let difference = 0;
@@ -37,6 +45,13 @@ const uInt8ArrayToBigInt = (buf: Uint8Array): bigint => {
   return output;
 };
 
+const c4IdToBigInt = (c4Id: string): bigint => (
+  c4Id
+    .substring(2) // omit the leading 'c4' from the C4 ID
+    .split('')
+    .reduce((acc, curr) => (acc * BIGINT_BASE) + BigInt(getIndexOfCharInCharset(curr)), 0n)
+);
+
 /* Sort a pair of UInt8Arrays, works with Array.sort() */
 const sortDigests = (a: Uint8Array, b: Uint8Array): number => {
   for (let i = 63; i >= 0; i -= 1) {
@@ -47,77 +62,83 @@ const sortDigests = (a: Uint8Array, b: Uint8Array): number => {
   return 0;
 };
 
-/* Sort and hash a pair of UInt8Arrays */
-const hashPair = (digests: Uint8Array): Uint8Array => createHash('sha512').update(digests).digest();
+const sortAndConcatenateDigests = (a: Uint8Array, b: Uint8Array): Uint8Array => {
+  const sorted = [a, b].sort(sortDigests);
+  return Uint8Array.of(...sorted[0], ...sorted[1]);
+};
+
+const separateHoldingElement = (c4ids: string[]): [string[], string | undefined] => {
+  const remainingElements = [...c4ids];
+  let holdingElement: string | undefined;
+
+  if (c4ids.length % 2 === 1) {
+    holdingElement = remainingElements.pop();
+  }
+
+  return [remainingElements, holdingElement];
+};
+
+/**
+ * Create a C4 ID from a SHA512 digest.
+ */
+function fromSHA512Hash(sha512HashDigest: Uint8Array): string {
+  let digest = uInt8ArrayToBigInt(sha512HashDigest);
+  const id = initializeNewC4IDArray();
+
+  let i = ID_LENGTH - 1;
+  while (digest !== 0n && i >= 0) {
+    const modulo = Number(digest % BIGINT_BASE);
+    id[i] = CHARSET[modulo];
+    digest /= BIGINT_BASE;
+    i -= 1;
+  }
+
+  return id.join('');
+}
+
+/**
+ * Convert a C4 ID to a SHA512 hash digest
+ */
+function toSHA512Digest(c4Id: string): Uint8Array {
+  let result = c4IdToBigInt(c4Id);
+  const sha512Digest = new Uint8Array(64);
+
+  for (let i = 63; i >= 0; i -= 1) {
+    sha512Digest[i] = Number(result % 256n);
+    result /= 256n;
+  }
+
+  return sha512Digest;
+}
+
+/**
+ * Create a "hash of hashes" from multiple C4 IDs, as described in SMPTE ST 2114:2017
+ */
+function fromIds(c4ids: string[]) : string {
+  let ids = Array.from(new Set(c4ids)).sort();
+
+  while (ids.length > 1) {
+    const [elements, holdingElement] = separateHoldingElement(ids);
+    const digests = elements.map((d) => toSHA512Digest(d));
+    ids = [];
+
+    for (let i = 0; i < digests.length; i += 2) {
+      const concatted = sortAndConcatenateDigests(digests[i], digests[i + 1]);
+      const digest = createHash('sha512').update(concatted).digest();
+      const id = fromSHA512Hash(digest);
+      ids.push(id);
+    }
+
+    if (holdingElement) {
+      ids.push(holdingElement);
+    }
+  }
+
+  return ids[0];
+}
 
 export default {
-  /**
-   * Create a C4 ID from a SHA512 digest.
-   */
-  fromSHA512Hash(sha512HashDigest: Uint8Array): string {
-    let digest = uInt8ArrayToBigInt(sha512HashDigest);
-
-    const id: string[] = Array(ID_LENGTH).fill('1', 2);
-    id[0] = 'c';
-    id[1] = '4';
-
-    let i = ID_LENGTH - 1;
-    while (digest !== 0n && i >= 0) {
-      const modulo = Number(digest % BIGINT_BASE);
-      id[i] = CHARSET[modulo];
-      digest /= BIGINT_BASE;
-      i -= 1;
-    }
-
-    return id.join('');
-  },
-
-  /**
-   * Convert a C4 ID to a SHA512 hash digest
-   */
-  toSHA512Digest(c4Id: string): Uint8Array {
-    const id = c4Id.split('').slice(2); // omit the leading 'c4' from the C4 ID
-
-    let result = id.reduce((acc, curr) => (acc * BIGINT_BASE) + BigInt(getIndexOfCharInCharset(curr)), 0n);
-    const sha512Digest = new Uint8Array(64);
-
-    for (let i = 63; i >= 0; i -= 1) {
-      sha512Digest[i] = Number(result % 256n);
-      result /= 256n;
-    }
-
-    return sha512Digest;
-  },
-
-  /**
-   * Create a "hash of hashes" from multiple C4 IDs, as described in SMPTE ST 2114:2017
-   */
-  fromIds(c4ids: string[]) : string {
-    let digests = Array.from(new Set(c4ids)).sort();
-
-    while (digests.length > 1) {
-      let holdingElement: string | undefined;
-
-      if (digests.length % 2 === 1) {
-        holdingElement = digests.pop();
-      }
-
-      const hashes = digests.map((d) => this.toSHA512Digest(d));
-      digests = [];
-
-      for (let i = 0; i < hashes.length; i += 2) {
-        const sorted = [hashes[i], hashes[i + 1]].sort(sortDigests);
-        const concatted = Uint8Array.of(...sorted[0], ...sorted[1]);
-        const digested = hashPair(concatted);
-        const id = this.fromSHA512Hash(digested);
-        digests.push(id);
-      }
-
-      if (holdingElement) {
-        digests.push(holdingElement);
-      }
-    }
-
-    return digests[0];
-  },
+  fromSHA512Hash,
+  toSHA512Digest,
+  fromIds,
 };

@@ -1,6 +1,9 @@
 {
   "name": "c4id",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "engines": {
+    "node": ">=16"
+  },
   "description": "JavaScript module to generate C4 IDs.",
   "repository": "https://github.com/bradcordeiro/c4id",
   "license": "MIT",
