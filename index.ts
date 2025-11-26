@@ -48,12 +48,7 @@ const sortDigests = (a: Uint8Array, b: Uint8Array): number => {
 };
 
 /* Sort and hash a pair of UInt8Arrays */
-const hashPair = (a: Uint8Array, b: Uint8Array): Uint8Array => {
-  const pair = [a, b].sort(sortDigests);
-
-  const concatted = Uint8Array.of(...pair[0], ...pair[1]);
-  return createHash('sha512').update(concatted).digest();
-};
+const hashPair = (digests: Uint8Array): Uint8Array => createHash('sha512').update(digests).digest();
 
 export default {
   /**
@@ -111,8 +106,10 @@ export default {
       digests = [];
 
       for (let i = 0; i < hashes.length; i += 2) {
-        const concatted = hashPair(hashes[i], hashes[i + 1]);
-        const id = this.fromSHA512Hash(concatted);
+        const sorted = [hashes[i], hashes[i + 1]].sort(sortDigests);
+        const concatted = Uint8Array.of(...sorted[0], ...sorted[1]);
+        const digested = hashPair(concatted);
+        const id = this.fromSHA512Hash(digested);
         digests.push(id);
       }
 
