@@ -14,7 +14,6 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@tsconfig/node22": "^22.0.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.14.0",
     "eslint-config-airbnb-typescript": "^17.1.0",

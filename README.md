@@ -1,6 +1,6 @@
 # C4ID
 
-A JavaScript module for NodeJS to generate C4 IDs. Written in TypeScript. As described in [SMPTE ST 2114:2017](https://pub.smpte.org/latest/st2114/st2114-2017.pdf), a C4 ID is a 90 character Base58 string representation of a 64 byte SHA512 hash. This package does not create SHA512 hashes, it simply creates their C4 IDs representation.
+A JavaScript module for NodeJS to generate C4 IDs. Written in TypeScript. As described in [SMPTE ST 2114:2017](https://pub.smpte.org/latest/st2114/st2114-2017.pdf), a C4 ID is a 90 character Base58 string representation of a SHA512 hash. This package does not create SHA512 hashes, it simply creates their C4 ID representation.
 
 ## Installing / Getting started
 
@@ -22,9 +22,9 @@ A JavaScript module for NodeJS to generate C4 IDs. Written in TypeScript. As des
 
 ### Built With
 
-This package was built and tested on Node.js 22.12.0. 
+This package was built and tested on Node.js 16.20.2. 
 
-The only development dependencies are packages needed for testing and linting, i.e. [Mocha](https://mochajs.org) and [ESLint](https://eslint.org).
+The only development dependencies [Typescript](https://www.npmjs.com/package/typescript) and packages needed for testing and linting, i.e. [Mocha](https://mochajs.org) and [ESLint](https://eslint.org), plus plugins for both.
 
 ### Setting up Dev
 
