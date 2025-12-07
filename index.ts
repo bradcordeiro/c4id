@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 const CHARSET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz' as const; // per SMPTE ST 2114:2017
 const ID_LENGTH = 90 as const; // per SMPTE ST 2114:2017
 const BIGINT_BASE = BigInt(CHARSET.length);
+const SHA512BYTLENGTH = 64 as const;
 
 const initializeNewC4IDArray = (): string[] => {
   const id: string[] = Array(ID_LENGTH).fill('1', 2);
@@ -54,7 +55,7 @@ const c4IdToBigInt = (c4Id: string): bigint => (
 
 /* Sort a pair of UInt8Arrays, works with Array.sort() */
 const sortDigests = (a: Uint8Array, b: Uint8Array): number => {
-  for (let i = 63; i >= 0; i -= 1) {
+  for (let i = SHA512BYTLENGTH - 1; i >= 0; i -= 1) {
     if (a[i] > b[i]) return 1;
     if (b[i] < a[i]) return -1;
   }
@@ -102,9 +103,9 @@ export default {
  */
   toSHA512Digest(c4Id: string): Uint8Array {
     let result = c4IdToBigInt(c4Id);
-    const sha512Digest = new Uint8Array(64);
+    const sha512Digest = new Uint8Array(SHA512BYTLENGTH);
 
-    for (let i = 63; i >= 0; i -= 1) {
+    for (let i = SHA512BYTLENGTH - 1; i >= 0; i -= 1) {
       sha512Digest[i] = Number(result % 256n);
       result /= 256n;
     }
