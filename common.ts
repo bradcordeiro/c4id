@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 const CHARSET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz' as const; // per SMPTE ST 2114:2017
 const ID_LENGTH = 90 as const; // per SMPTE ST 2114:2017
 const BIGINT_BASE = BigInt(CHARSET.length);
@@ -15,9 +13,9 @@ const initializeNewC4IDArray = (): string[] => {
 
 const getIndexOfCharInCharset = (char: string): number => {
   const x = char.charCodeAt(0);
-  
+
   /* Converts a Unicode value to an index in the CHARSET */
-  
+
   // '1' to '9'
   let difference = 49;
   // 'A' to 'H'
@@ -62,12 +60,12 @@ const digestSort = (a: Uint8Array, b: Uint8Array): number => {
   return 0;
 };
 
-const sortAndConcatenateDigests = (a: Uint8Array, b: Uint8Array): Uint8Array => {
+export const sortAndConcatenateDigests = (a: Uint8Array, b: Uint8Array): Uint8Array => {
   const sorted = [a, b].sort(digestSort);
   return Uint8Array.of(...sorted[0], ...sorted[1]);
 };
 
-const separateHoldingElement = (c4ids: string[]): [string[], string | undefined] => {
+export const separateHoldingElement = (c4ids: string[]): [string[], string | undefined] => {
   const remainingElements = [...c4ids];
   let holdingElement: string | undefined;
 
@@ -110,31 +108,5 @@ export default {
     }
 
     return sha512Digest;
-  },
-
-  /**
- * Create a "hash of hashes" from multiple C4 IDs, as described in SMPTE ST 2114:2017.
- */
-  fromIds(c4ids: string[]) : string {
-    let ids = Array.from(new Set(c4ids)).sort();
-
-    while (ids.length > 1) {
-      const [elements, holdingElement] = separateHoldingElement(ids);
-      const digests = elements.map((d) => this.toSHA512Digest(d));
-      ids = [];
-
-      for (let i = 0; i < digests.length; i += 2) {
-        const concatted = sortAndConcatenateDigests(digests[i], digests[i + 1]);
-        const digest = createHash('sha512').update(concatted).digest();
-        const id = this.fromSHA512Hash(digest);
-        ids.push(id);
-      }
-
-      if (holdingElement) {
-        ids.push(holdingElement);
-      }
-    }
-
-    return ids[0];
   },
 };
