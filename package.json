@@ -11,8 +11,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha dist/test/index.js",
-    "build": "tsc",
-    "perf": "node dist/test/performance.js"
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",

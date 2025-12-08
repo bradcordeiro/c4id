@@ -3,7 +3,6 @@ import { createHash } from 'node:crypto';
 import assert from 'node:assert';
 import C4ID from '../index.js';
 
-// per SMPTE ST 2114:2017
 const INPUTS = [
   'alfa',
   'bravo',
@@ -16,7 +15,6 @@ const INPUTS = [
   'india',
 ];
 
-// per SMPTE ST 2114:2017
 const EXPECTED = [
   'c43zYcLni5LF9rR4Lg4B8h3Jp8SBwjcnyyeh4bc6gTPHndKuKdjUWx1kJPYhZxYt3zV6tQXpDs2shPsPYjgG81wZM1',
   'c42jd8KUQG9DKppN1qt5aWS3PAmdPmNutXyVTb8H123FcuU3shPxpUXsVdcouSALZ4PaDvMYzQSMYCWkb6rop9zhDa',
@@ -54,7 +52,6 @@ describe('C4Hash', () => {
     });
 
     it('correctly encodes a C4 ID of C4 IDs', () => {
-      // per SMPTE ST 2114:2017
       const expected = 'c435RzTWWsjWD1Fi7dxS3idJ7vFgPVR96oE95RfDDT5ue7hRSPENePDjPDJdnV46g7emDzWK8LzJUjGESMG5qzuXqq';
       const hashOfHashes = C4ID.fromIds(EXPECTED);
 

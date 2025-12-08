@@ -15,13 +15,14 @@ const initializeNewC4IDArray = (): string[] => {
 
 const getIndexOfCharInCharset = (char: string): number => {
   const x = char.charCodeAt(0);
-  
+  let difference = 0;
+
   /* Converts a Unicode value to an index in the CHARSET */
-  
+
   // '1' to '9'
-  let difference = 49;
+  if (x >= 49 && x <= 57) difference = 49;
   // 'A' to 'H'
-  if (x >= 65 && x <= 72) difference = 56;
+  else if (x >= 65 && x <= 72) difference = 56;
   // 'J' to 'N'
   else if (x >= 74 && x <= 78) difference = 57;
   // 'P' to 'Z'
@@ -53,7 +54,7 @@ const c4IdToBigInt = (c4Id: string): bigint => (
 );
 
 /* Sort a pair of UInt8Arrays, works with Array.sort() */
-const digestSort = (a: Uint8Array, b: Uint8Array): number => {
+const sortDigests = (a: Uint8Array, b: Uint8Array): number => {
   for (let i = SHA512BYTLENGTH - 1; i >= 0; i -= 1) {
     if (a[i] > b[i]) return 1;
     if (b[i] < a[i]) return -1;
@@ -63,7 +64,7 @@ const digestSort = (a: Uint8Array, b: Uint8Array): number => {
 };
 
 const sortAndConcatenateDigests = (a: Uint8Array, b: Uint8Array): Uint8Array => {
-  const sorted = [a, b].sort(digestSort);
+  const sorted = [a, b].sort(sortDigests);
   return Uint8Array.of(...sorted[0], ...sorted[1]);
 };
 
