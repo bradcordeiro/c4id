@@ -1,8 +1,7 @@
 /* eslint-env mocha */
 import { createHash } from 'node:crypto';
 import assert from 'node:assert';
-import NodeJSCode from '../nodejs.js';
-import BrowserCode from '../browser.js';
+import C4ID from '../index.js';
 
 // per SMPTE ST 2114:2017
 const INPUTS = [
@@ -31,19 +30,19 @@ const EXPECTED = [
 ];
 
 describe('C4Hash', () => {
-  describe('NodeJS', () => {
+  describe('hash', () => {
     it('correctly encodes test strings to C4 IDs', () => {
       const inputHashes = INPUTS.map((i) => createHash('sha512').update(i).digest());
 
       inputHashes.forEach((hash, i) => {
-        const h = NodeJSCode.fromSHA512Hash(hash);
+        const h = C4ID.fromSHA512Hash(hash);
         assert.strictEqual(h, EXPECTED[i], `${i}: ${EXPECTED[i]} !== ${h}`);
       });
     });
 
     it('correctly converts a C4 ID to a SHA512 hash digest', () => {
       const inputHashes = INPUTS.map((str) => createHash('sha512').update(str).digest());
-      const outputSHA512s = EXPECTED.map((id) => NodeJSCode.toSHA512Digest(id));
+      const outputSHA512s = EXPECTED.map((id) => C4ID.toSHA512Digest(id));
 
       for (let i = 0; i < inputHashes.length; i += 1) {
         assert.strictEqual(
@@ -57,39 +56,7 @@ describe('C4Hash', () => {
     it('correctly encodes a C4 ID of C4 IDs', () => {
       // per SMPTE ST 2114:2017
       const expected = 'c435RzTWWsjWD1Fi7dxS3idJ7vFgPVR96oE95RfDDT5ue7hRSPENePDjPDJdnV46g7emDzWK8LzJUjGESMG5qzuXqq';
-      const hashOfHashes = NodeJSCode.fromIds(EXPECTED);
-
-      assert.strictEqual(hashOfHashes, expected);
-    });
-  });
-
-  describe('Browser', () => {
-    it('correctly encodes test strings to C4 IDs', () => {
-      const inputHashes = INPUTS.map((i) => createHash('sha512').update(i).digest());
-
-      inputHashes.forEach((hash, i) => {
-        const h = BrowserCode.fromSHA512Hash(hash);
-        assert.strictEqual(h, EXPECTED[i], `${i}: ${EXPECTED[i]} !== ${h}`);
-      });
-    });
-
-    it('correctly converts a C4 ID to a SHA512 hash digest', () => {
-      const inputHashes = INPUTS.map((str) => createHash('sha512').update(str).digest());
-      const outputSHA512s = EXPECTED.map((id) => BrowserCode.toSHA512Digest(id));
-
-      for (let i = 0; i < inputHashes.length; i += 1) {
-        assert.strictEqual(
-          Buffer.compare(outputSHA512s[i], inputHashes[i]),
-          0,
-          `${i}: ${outputSHA512s[i]} !== ${inputHashes[i]}`,
-        );
-      }
-    });
-
-    it('correctly encodes a C4 ID of C4 IDs', async () => {
-      // per SMPTE ST 2114:2017
-      const expected = 'c435RzTWWsjWD1Fi7dxS3idJ7vFgPVR96oE95RfDDT5ue7hRSPENePDjPDJdnV46g7emDzWK8LzJUjGESMG5qzuXqq';
-      const hashOfHashes = await BrowserCode.fromIds(EXPECTED);
+      const hashOfHashes = C4ID.fromIds(EXPECTED);
 
       assert.strictEqual(hashOfHashes, expected);
     });

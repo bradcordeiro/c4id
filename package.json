@@ -1,6 +1,6 @@
 {
   "name": "c4id",
-  "version": "1.1.0",
+  "version": "1.0.1",
   "engines": {
     "node": ">=16"
   },
@@ -8,8 +8,7 @@
   "repository": "https://github.com/bradcordeiro/c4id",
   "license": "MIT",
   "author": "Brad Cordeiro <brad.cordeiro@gmail.com>",
-  "main": "./dist/nodejs.js",
-  "unpkg": "./dist/browser.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "mocha dist/test/index.js",
     "build": "tsc",

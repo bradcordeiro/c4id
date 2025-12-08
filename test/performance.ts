@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
-import C4ID from '../nodejs';
+import C4ID from '../index';
 
 /* eslint-disable no-console */
 

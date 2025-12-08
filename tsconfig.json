@@ -1,9 +1,7 @@
 {
   "include": [
-    "common.ts",
-    "nodejs.ts",
-    "browser.ts",
-    "test/*.ts"
+    "index.ts",
+    "test/**/*.ts"
   ],
   "compilerOptions": {
     "module": "node16",
